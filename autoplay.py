@@ -46,7 +46,7 @@ def screen_change():
 
 if __name__ == '__main__':
 
-    time.sleep(1.5) #this is to give me time to transition to citra, AKA clicking it and making it fullscreen
+    #time.sleep(1.5) #this is to give me time to transition to citra, AKA clicking it and making it fullscreen
     global PP
     PP = 3
 
@@ -127,14 +127,16 @@ if __name__ == '__main__':
         win32api.keybd_event(direction, 0, 0, 0)
         stop = time.time() + dur
         while time.time() < stop:
-            time.sleep(0.1)
+            time.sleep(.01)
             if screen_change():
                 print("now it should fight")
                 time.sleep(.1)
                 win32api.keybd_event(direction, 0, win32con.KEYEVENTF_KEYUP, 0)
+
                 battle_attack() if battle else battle_flee()
                 #win32api.keybd_event(direction, 0, 0, 0)
             win32api.keybd_event(direction, 0, 0, 0)
+            time.sleep(.01)
         win32api.keybd_event(direction, 0, win32con.KEYEVENTF_KEYUP, 0)
 
     def restore():
@@ -144,7 +146,7 @@ if __name__ == '__main__':
         walk(left, .1, False)
         walk(up, 1.3, False)
         return None
-    restore()
+
     route = []
     mirrored_route = [] #the reverse of the route, we need to mirror their route to make a circuit, also kys for reading this
     prev_key = None
@@ -158,8 +160,7 @@ if __name__ == '__main__':
         if prev_key is not key:
             prev_key = key
             start = time.time()
-        # if prev_key is not key:
-        #     prev_key = key
+
 
 
     def convert(direction):
@@ -181,6 +182,7 @@ if __name__ == '__main__':
         global prev_key
         global finish, start
         global mirrored_route
+        global route
         finish = time.time()
         direction, opposite= convert(str(key)[4:])
         if direction != "you're mom gay":
@@ -193,11 +195,11 @@ if __name__ == '__main__':
 
     # Collect events until released
 
-    # with keybd.Listener(
-    #         on_press=on_press,
-    #         on_release=on_release) as listener:
-    #     listener.join()
-    #listener.start()
+    with keybd.Listener(
+            on_press=on_press,
+            on_release=on_release) as listener:
+        listener.join()
+
 
     #time.sleep(3)
     #listener.start()
@@ -210,16 +212,16 @@ if __name__ == '__main__':
     #     return
 
     #create_route()
-    #time.sleep(2)
-    # while PP > 0:
-    #     # for inst in route:
-    #     #     #print(str(inst[0]))
-    #     #     walk(inst[0], inst[1], 0)
-    #     if PP is 1:
-    #         restore()
-    #     walk(down, 1, True)
-    #     time.sleep(.1)
-    #     walk(up, 1, True)
+    pokeRoute = [(38, 1.5529561042785645), (37, 1.2641196250915527), (38, 1.4917104244232178), (37, 0.9738736152648926), (38, 1.5699114799499512), (37, 1.0184006690979004), (38, 2.955657958984375), (40, 3.0244719982147217), (39, 1.156069040298462), (40, 4.711004257202148), (37, 1.3042247295379639), (38, 0.28174829483032227)]
+    print(route)
 
+
+    for inst in route:
+        print(inst[1])
+        walk(inst[0], inst[1], False)
+        # walk(down, 1, True)
+        # time.sleep(.1)
+        # walk(up, 1, True)
+        #
 
 
