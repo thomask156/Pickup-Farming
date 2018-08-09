@@ -191,10 +191,11 @@ from QTGui import *
 from PyQt5.QtWidgets import QTableView, QComboBox
 
 
+
 class ReportExample(QWidget):
     def __init__(self):
         super().__init__()
-        self.installEventFilter(self)
+        #self.installEventFilter(self)
         self.initUI()
         self.grabKeyboard()
 
@@ -206,17 +207,20 @@ class ReportExample(QWidget):
         allCustBtn.setCheckable(True)
         allCustBtn.move(10, 10)
         allCustBtn.clicked[bool].connect(self.handleBtn)
-        self.default_genre = "Metal"
-        self.genreLbl = QLabel(self.default_genre, self)
-        self.genreLbl.move(200, 60)
+        showRtBtn = QPushButton('Show Route', self)
+        showRtBtn.setCheckable(True)
+        showRtBtn.move(100, 10)
+        showRtBtn.clicked[bool].connect(self.handleBtn)
         self.setGeometry(300, 300, 650, 400)
-        self.setWindowTitle('Reports')
+        self.setWindowTitle('Poke Bot')
         self.show()
-        self.keyPressEvent = self.keyPressEvent
-        self.keyReleaseEvent = self.keyReleaseEvent
+        # self.keyPressEvent = self.keyPressEvent
+        # self.keyReleaseEvent = self.keyReleaseEvent
         self.start = 0
         self.prev_key = None
-
+        self.record = 0
+        self.route = []
+        self.listener = None
 
     def handleBtn(self):
 
@@ -224,7 +228,14 @@ class ReportExample(QWidget):
 
         if source.text() == "Testing":
             # TODO: make the calls to run the appropriate query and get the model
-            print("stuff")
+            print("hi")
+            with keybd.Listener(
+                    on_press=self.on_press,
+                    on_release=self.on_release) as self.listener:
+                self.listener.join()
+            print("hello")
+        if source.text() == "Show Route":
+            print(self.route)
 
 
     def onActivated(self, text):
@@ -235,22 +246,63 @@ class ReportExample(QWidget):
     #     print(str(event.key()))
     #     print()
 
-    def eventFilter(self, source, event):  #this will be used for recording key presses
+    def on_press(self, key):
+        print(key)
+        if self.prev_key is not key:
+            self.prev_key = key
+            self.start = time.time()
 
-        if event.type() == QtCore.QEvent.KeyPress:
-            if event.key() != self.prev_key:   #this is because this thing likes to say I pressed something multiple times when holding down a key
-                #print(str(self.prev_key))
-                self.prev_key = event.key()
-                #print(str(event.key()))
-                self.start = time.time()
-                #print(self.start)
-        if event.type() == QtCore.QEvent.KeyRelease:
-            if self.start is not 0:
-                if not event.isAutoRepeat():  #this is for the same reason as above, but doesn't help arrow keys
-                    print(str(event.key())+" was held for "+str(time.time()-self.start)+" seconds")
-                    self.prev_key = None
 
-        return super(ReportExample, self).eventFilter(source, event)
+
+    def convert(self, direction):
+        up = win32con.VK_UP
+        down = win32con.VK_DOWN
+        left = win32con.VK_LEFT
+        right = win32con.VK_RIGHT
+        if direction == "down":
+            return down, up
+        if direction == "up":
+            return up, down
+        if direction == "left":
+            return left, right
+        if direction == "right":
+            return right, left
+        return "you're mom gay", "no u"
+
+    def on_release(self, key):
+        self.prev_key
+        self.start
+        #self.mirrored_route
+        self.route
+        finish = time.time()
+        direction, opposite= self.convert(str(key)[4:])
+        if direction != "you're mom gay":
+            time_taken = finish - self.start
+            self.route.append((direction, time_taken))
+            #mirrored_route = [(opposite, time_taken)] + self.mirrored_route  #this will be the mirror of the route we just took
+        if key == keybd.Key.esc:
+            # Stop listener
+            return False
+
+    # Collect events until released
+
+
+
+    # def eventFilter(self, source, event):  #this will be used for recording key presses
+    #     if event.type() == QtCore.QEvent.KeyPress and self.record is 1:
+    #         if event.key() != self.prev_key:   #this is because this thing likes to say I pressed something multiple times when holding down a key
+    #             #print(str(self.prev_key))
+    #             self.prev_key = event.key()
+    #             #print(str(event.key()))
+    #             self.start = time.time()
+    #             #print(self.start)
+    #     if event.type() == QtCore.QEvent.KeyRelease and self.record is 1:
+    #         if self.start is not 0:
+    #             if not event.isAutoRepeat():  #this is for the same reason as above, but doesn't help arrow keys
+    #                 print(str(event.key())[-2:]+" was held for "+str(time.time()-self.start)+" seconds")
+    #                 self.prev_key = None
+    #
+    #     return super(ReportExample, self).eventFilter(source, event)
 
 
 

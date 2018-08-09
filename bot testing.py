@@ -11,7 +11,7 @@ down = win32con.VK_DOWN
 left = win32con.VK_LEFT
 right = win32con.VK_RIGHT
 
-keyboard=Controller()
+keyboard = Controller()
 
 def get_pixel_color():
     im = ImageGrab.grab(bbox=(750, 646, 751, 647))
@@ -57,7 +57,6 @@ def check_poke():
 def pickup():
     time.sleep(1)
     keypress('z')
-    print("opening menu")
     keyboard.press('a')
     time.sleep(.1)
     keyboard.release('a')
@@ -75,7 +74,6 @@ def pickup():
     time.sleep(4)
 
 def battle_attack():
-    print("battle")
     time.sleep(5)
     keyboard.press('a')
     time.sleep(.1)
@@ -107,8 +105,9 @@ def walk(direction, dur, battle):  # here we set the direction we want to walk i
 if __name__ == '__main__':
     freeze_support()
     time.sleep(1)
-    battle_attack()
+    #battle_attack()
     while True:
-        walk(down, 1, 1)
-        time.sleep(.2)
         walk(up, 1, 1)
+        time.sleep(.2)
+        walk(down, 3, 1)
+        time.sleep(.2)

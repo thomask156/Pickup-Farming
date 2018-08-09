@@ -87,7 +87,7 @@ class ReportExample(QWidget):
     def keypress(self, key):
         time.sleep(.2)
         self.keyboard.press(key)
-        time.sleep(.2)
+        time.sleep(.1)
         self.keyboard.release(key)
         time.sleep(.2)
 
@@ -153,17 +153,19 @@ class ReportExample(QWidget):
         time.sleep(5)
         #return
 
-    def walk(self, direction, dur, battle):  # here we set the direction we want to walk in, the time we walk here, and if we battle or not
+    def walk(self, direction, dur,
+             battle):  # here we set the direction we want to walk in, the time we walk here, and if we battle or not
         win32api.keybd_event(direction, 0, 0, 0)
         stop = time.time() + dur
         while time.time() < stop:
-            time.sleep(0.1)
+            time.sleep(.01)
             if self.screen_change():
+                time.sleep(.3)
                 win32api.keybd_event(direction, 0, win32con.KEYEVENTF_KEYUP, 0)
-                self.battle_attack() if battle else  self.battle_flee()
+                time.sleep(.2)
+                self.battle_attack() if battle else print("hi")
             win32api.keybd_event(direction, 0, 0, 0)
         win32api.keybd_event(direction, 0, win32con.KEYEVENTF_KEYUP, 0)
-
 
 
 
@@ -217,6 +219,7 @@ class ReportExample(QWidget):
             self.run_route()
         elif source.text() == "Testing":
                 self.battle_attack()
+
     def onActivated(self, text):
         self.genreLbl.setText(text)
         self.genreLbl.adjustSize()
