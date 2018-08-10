@@ -11,58 +11,6 @@ from PyQt5.QtWidgets import QTableView, QComboBox
 
 class ReportExample(QWidget):
 
-    def keyPressEvent(self, key):
-        print("it's working")
-        if self.prev_key is not key:
-            prev_key = key
-            self.start = time.time()
-        # if prev_key is not key:
-        #     prev_key = key
-
-
-    def convertDir(self, direction):
-        up = win32con.VK_UP
-        down = win32con.VK_DOWN
-        left = win32con.VK_LEFT
-        right = win32con.VK_RIGHT
-        if direction == "down":
-            return down, up
-        if direction == "up":
-            return up, down
-        if direction == "left":
-            return left, right
-        if direction == "right":
-            return right, left
-        return "you're mom gay", "no u"
-
-    def keyPressRelease(self, key):
-        finish = time.time()
-        direction, opposite= self.convertDir(str(key)[4:])
-        if direction != "you're mom gay":
-            time_taken = finish - self.start
-            self.route.append((direction, time_taken))
-            self.mirrored_route = [(opposite, time_taken)] + self.mirrored_route  #this will be the mirror of the route we just took
-        if key == keybd.Key.esc:
-            # Stop listener
-            self.close()
-
-
-    def __init__(self):
-        super().__init__()
-        self.initUI()
-        self.state_left = win32api.GetKeyState(0x01)
-        self.check_black = (1058, 670)  #this is a pixel on the lower screen we are going to check if it turns black
-        self.up = win32con.VK_UP
-        self.down = win32con.VK_DOWN
-        self.left = win32con.VK_LEFT
-        self.right = win32con.VK_RIGHT
-        self.keyboard = Controller()
-        self.PP = 3
-        self.route = []
-        self.mirrored_route = []
-        self.prev_key = None
-
-
     def get_pixel_color(self):
         im = ImageGrab.grab(bbox=(750, 646, 751, 647))
         rgb_im = im.convert('RGB')
@@ -80,9 +28,60 @@ class ReportExample(QWidget):
         else:
             return True
 
+    def on_press(self, key):
+        print(key)
+        if self.prev_key is not key:
+            self.prev_key = key
+            self.start = time.time()
+
+    def convert(self, direction):
+        up = win32con.VK_UP
+        down = win32con.VK_DOWN
+        left = win32con.VK_LEFT
+        right = win32con.VK_RIGHT
+        if direction == "down":
+            return down, up
+        if direction == "up":
+            return up, down
+        if direction == "left":
+            return left, right
+        if direction == "right":
+            return right, left
+        return "you're mom gay", "no u"
+
+    def on_release(self, key):
+        self.prev_key
+        self.start
+        self.route
+        finish = time.time()
+        direction, opposite= self.convert(str(key)[4:])
+        if direction != "you're mom gay":
+            time_taken = finish - self.start
+            self.route.append((direction, time_taken))
+            #mirrored_route = [(opposite, time_taken)] + self.mirrored_route  #this will be the mirror of the route we just took
+        if key == keybd.Key.esc:
+            # Stop listener
+            return False
+
+
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+        self.state_left = win32api.GetKeyState(0x01)
+        self.check_black = (1058, 670)  #this is a pixel on the lower screen we are going to check if it turns black
+        self.up = win32con.VK_UP
+        self.down = win32con.VK_DOWN
+        self.left = win32con.VK_LEFT
+        self.right = win32con.VK_RIGHT
+        self.keyboard = Controller()
+        self.PP = 5
+        self.route = []
+        self.mirrored_route = []
+        self.prev_key = None
+        self.listener = None
+
     def battled(self):
-        global PP
-        PP -= 1
+        self.PP = self.PP - 1
 
     def keypress(self, key):
         time.sleep(.2)
@@ -109,7 +108,6 @@ class ReportExample(QWidget):
     def pickup(self):
         time.sleep(1)
         self.keypress('z')
-        print("opening menu")
         self.keyboard.press('a')
         time.sleep(.3)
         self.keyboard.release('a')
@@ -136,29 +134,26 @@ class ReportExample(QWidget):
         self.keyboard.press('a')
         time.sleep(.3)
         self.keyboard.release('a')
-        #self.battled()
+        self.battled()
         time.sleep(7)
         time.sleep(.3)
         self.pickup()
-        #return
 
     def battle_flee(self):
         time.sleep(6)
-        print("running away")
         self.keypress(Key.down)
         self.keypress(Key.right)
         self.keyboard.press('a')
         time.sleep(.1)
         self.keyboard.release('a')
         time.sleep(5)
-        #return
 
     def walk(self, direction, dur,
              battle):  # here we set the direction we want to walk in, the time we walk here, and if we battle or not
         win32api.keybd_event(direction, 0, 0, 0)
         stop = time.time() + dur
         while time.time() < stop:
-            time.sleep(.01)
+            time.sleep(.03)
             if self.screen_change():
                 time.sleep(.3)
                 win32api.keybd_event(direction, 0, win32con.KEYEVENTF_KEYUP, 0)
@@ -173,19 +168,29 @@ class ReportExample(QWidget):
 
     def initUI(self):
         #create buttons and their event handler
-        allCustBtn = QPushButton('Run Pickup', self)
-        allCustBtn.setCheckable(True)
-        allCustBtn.move(10, 10)
-        allCustBtn.clicked[bool].connect(self.handleBtn)
+        pickBtn = QPushButton('Run Pickup', self)
+        pickBtn.setCheckable(True)
+        pickBtn.move(10, 10)
+        pickBtn.clicked[bool].connect(self.handleBtn)
 
-        allGenresBtn = QPushButton('Run Route', self)
-        allGenresBtn.setCheckable(True)
-        allGenresBtn.move(10, 60)
-        allGenresBtn.clicked[bool].connect(self.handleBtn)
+        routingBtn = QPushButton('Run Route', self)
+        routingBtn.setCheckable(True)
+        routingBtn.move(10, 60)
+        routingBtn.clicked[bool].connect(self.handleBtn)
 
-        clearBtn = QPushButton('Testing', self)
+        RecordBtn = QPushButton('Record Route', self)
+        RecordBtn.setCheckable(True)
+        RecordBtn.move(10, 110)
+        RecordBtn.clicked[bool].connect(self.handleBtn)
+
+        routeBtn = QPushButton('Show Route', self)
+        routeBtn.setCheckable(True)
+        routeBtn.move(10, 160)
+        routeBtn.clicked[bool].connect(self.handleBtn)
+
+        clearBtn = QPushButton('Clear Route', self)
         clearBtn.setCheckable(True)
-        clearBtn.move(10, 110)
+        clearBtn.move(10, 210)
         clearBtn.clicked[bool].connect(self.handleBtn)
 
 
@@ -199,11 +204,8 @@ class ReportExample(QWidget):
 
     def run_route(self):
         time.sleep(2)
-        while self.PP > 0:
-            time.sleep(.1)
-            self.walk(self.down, 1, True)
-            time.sleep(.1)
-            self.walk(self.up, 1, True)
+        for r in self.route:
+            self.walk(r[0], r[1], 1)
 
 
     def handleBtn(self):
@@ -217,8 +219,15 @@ class ReportExample(QWidget):
         if source.text() == "Run Route":
             # TODO: make the calls to run the appropriate query and get the model
             self.run_route()
-        elif source.text() == "Testing":
-                self.battle_attack()
+        if source.text() == "Record Route":
+            with keybd.Listener(
+                    on_press=self.on_press,
+                    on_release=self.on_release) as self.listener:
+                self.listener.join()
+        if source.text() == "Show Route":
+            print(self.route)
+        elif source.text() == "Clear Route":
+            self.route = []
 
     def onActivated(self, text):
         self.genreLbl.setText(text)
