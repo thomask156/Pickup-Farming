@@ -8,6 +8,11 @@ from pynput import keyboard as keybd
 from PyQt5.QtWidgets import (QWidget, QPushButton, QVBoxLayout, QApplication, QLabel)
 from PyQt5.QtWidgets import QTableView, QComboBox
 
+##Things to add:
+## -Select Which Slots have pickups bots
+## -Select which mons have HM moves
+## -Let people know that the bot can be inconsistent because windows sucks
+
 
 class ReportExample(QWidget):
 
@@ -57,7 +62,7 @@ class ReportExample(QWidget):
         direction, opposite= self.convert(str(key)[4:])
         if direction != "you're mom gay":
             time_taken = finish - self.start
-            self.route.append((direction, time_taken))
+            self.route.append((direction,  .97 * time_taken))
             #mirrored_route = [(opposite, time_taken)] + self.mirrored_route  #this will be the mirror of the route we just took
         if key == keybd.Key.esc:
             # Stop listener
@@ -153,7 +158,7 @@ class ReportExample(QWidget):
         win32api.keybd_event(direction, 0, 0, 0)
         stop = time.time() + dur
         while time.time() < stop:
-            time.sleep(.03)
+            time.sleep(.01)
             if self.screen_change():
                 time.sleep(.3)
                 win32api.keybd_event(direction, 0, win32con.KEYEVENTF_KEYUP, 0)
@@ -205,6 +210,7 @@ class ReportExample(QWidget):
     def run_route(self):
         time.sleep(2)
         for r in self.route:
+            time.sleep(.1)
             self.walk(r[0], r[1], 1)
 
 
