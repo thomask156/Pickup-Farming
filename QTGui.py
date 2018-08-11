@@ -148,6 +148,7 @@ class ReportExample(QWidget):
     def battle_flee(self):
         time.sleep(6)
         self.keypress(Key.down)
+        time.sleep(.2)
         self.keypress(Key.right)
         self.keyboard.press('a')
         time.sleep(.1)
@@ -164,7 +165,7 @@ class ReportExample(QWidget):
                 time.sleep(.3)
                 win32api.keybd_event(direction, 0, win32con.KEYEVENTF_KEYUP, 0)
                 time.sleep(.2)
-                self.battle_attack() if battle else print("hi")
+                self.battle_attack() if battle else self.battle_flee()
             win32api.keybd_event(direction, 0, 0, 0)
         win32api.keybd_event(direction, 0, win32con.KEYEVENTF_KEYUP, 0)
 
@@ -215,28 +216,31 @@ class ReportExample(QWidget):
 
     def run_route(self):
         time.sleep(2)
-        for r in self.route:
-            time.sleep(.1)
-            self.walk(r[0], r[1], 1)
+        while self.PP > 0:
+            for r in self.route:
+                if self.PP is 1:
+                    self.pokeCenter()
+                time.sleep(.1)
+                self.walk(r[0], r[1], 1)
 
     def pokeCenter(self):
-        self.walk(self.up, 3, 1)
+        self.walk(self.up, 3, 0)
         time.sleep(.2)
-        self.walk(self.right, 3, 1)
+        self.walk(self.right, 4, 0)
         time.sleep(.2)
-        self.walk(self.up, 3, 1)
+        self.walk(self.up, 3, 0)
         time.sleep(.2)
-        self.walk(self.left, 3, 1)
+        self.walk(self.left, 3, 0)
         time.sleep(.2)
-        self.walk(self.up, 2, 1)
+        self.walk(self.up, 2, 0)
         time.sleep(.2)
-        self.walk(self.left, .4, 1)
+        self.walk(self.left, .4, 0)
         time.sleep(.2)
-        self.walk(self.up, 1, 1)
+        self.walk(self.up, 1, 0)
         time.sleep(.2)
-        self.walk(self.left, .75, 1)
+        self.walk(self.left, .75, 0)
         time.sleep(.2)
-        self.walk(self.up, 4, 1)
+        self.walk(self.up, 4, 0)
         self.keypress('a')
         time.sleep(1)
         self.keypress('a')
@@ -249,12 +253,12 @@ class ReportExample(QWidget):
         time.sleep(.5)
         self.keypress('a')
         time.sleep(.1)
-        self.walk(self.down, 2, 1, )
+        self.walk(self.down, 2, 0)
         time.sleep(.1)
-        self.walk(self.right, .6, 1)
+        self.walk(self.right, .6, 0)
         time.sleep(.1)
-        self.walk(self.down, 4, 1)
-        self.walk(self.left, .85, 1)
+        self.walk(self.down, 4, 0)
+        self.walk(self.left, .85, 0)
 
     def handleBtn(self):
 
