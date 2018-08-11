@@ -201,7 +201,7 @@ class ReportExample(QWidget):
 
         healBtn = QPushButton('Poke Center', self)
         healBtn.setCheckable(True)
-        healBtn.move(10, 210)
+        healBtn.move(10, 260)
         healBtn.clicked[bool].connect(self.handleBtn)
 
 
