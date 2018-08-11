@@ -182,14 +182,23 @@
     It used classes from PyQt including a model/view pair as well as a database accessor module.
 """
 import sys
-from PyQt5 import Qt
-from PyQt5.QtWidgets import (QWidget, QPushButton, QVBoxLayout, QApplication, QLabel)
+from PyQt5.QtWidgets import (QWidget, QPushButton, QVBoxLayout, QApplication, QLabel, QListWidget, QCheckBox)
 from PyQt5.uic.properties import QtGui
 from PyQt5 import QtCore
 import sys
 from QTGui import *
 from PyQt5.QtWidgets import QTableView, QComboBox
+from pynput.keyboard import Key, Controller
+import sys
+import win32api, win32gui, win32con
+import time
+import pyscreenshot as ImageGrab
 
+from pynput.keyboard import Key, Controller
+from pynput import keyboard as keybd
+from PyQt5.QtWidgets import (QWidget, QPushButton, QVBoxLayout, QApplication, QLabel, QCheckBox)
+from PyQt5.QtWidgets import QTableView, QComboBox
+from PyQt5 import *
 
 
 class ReportExample(QWidget):
@@ -197,30 +206,71 @@ class ReportExample(QWidget):
         super().__init__()
         #self.installEventFilter(self)
         self.initUI()
-        self.grabKeyboard()
+        self.keyboard = Controller()
 
 
     def initUI(self):
 
         #create buttons and their event handler
+        self.setWindowTitle('Poke Bot')
+
         allCustBtn = QPushButton('Testing', self)
         allCustBtn.setCheckable(True)
         allCustBtn.move(10, 10)
         allCustBtn.clicked[bool].connect(self.handleBtn)
+
         showRtBtn = QPushButton('Show Route', self)
         showRtBtn.setCheckable(True)
         showRtBtn.move(100, 10)
         showRtBtn.clicked[bool].connect(self.handleBtn)
         self.setGeometry(300, 300, 650, 400)
-        self.setWindowTitle('Poke Bot')
+        for i in range(1,7):
+            self.initPickCheckbox(i, 20, 20*i+10)
+        for i in range(1,7):
+            self.initHMCheckbox("slot "+str(i)+" has HM", 120, 20*i+10)
+
         self.show()
-        # self.keyPressEvent = self.keyPressEvent
-        # self.keyReleaseEvent = self.keyReleaseEvent
-        self.start = 0
-        self.prev_key = None
-        self.record = 0
-        self.route = []
-        self.listener = None
+
+        self.hasPick = []
+        self.hasHM = {}
+        for i in range(1,7):
+            self.hasHM[str(i)] = False
+
+    def initPickCheckbox(self, name, x, y):
+        self.b = QCheckBox(str(name), self)
+        self.b.stateChanged.connect(self.clickBox)
+        self.b.move(x, y)
+        self.b.resize(320, 40)
+
+    def initHMCheckbox(self, name, x, y):
+        self.c = QCheckBox(str(name), self)
+        #self.c.stateChanged.connect(self.HMclickBox)
+        self.c.move(x, y)
+        self.c.resize(320, 40)
+
+    def clickBox(self, state):
+        source = self.sender()
+        print(QtCore.Qt.Checked)
+        # if state == QtCore.Qt.Checked:
+        #     for i in range(1, 7):
+        #         if source.text() == str(i):
+        #             self.hasPick.append(i)
+    #     else:
+    #         for i in range(1,7):
+    #             if source.text() == str(i):
+    #                 self.hasPick.remove(i)
+    #
+    # def HMclickBox(self, state):
+    #     source = self.sender()
+    #     if state == QtCore.Qt.Checked:
+    #         for i in range(1, 7):
+    #             if source.text()[5] == str(i):
+    #                 #have i as the key, have it set to true here
+    #                 self.hasHM[str(i)] = True
+    #     else:
+    #         for i in range(1, 7):
+    #             if source.text()[5] == str(i):
+    #                 self.hasHM[str(i)] = False
 
     def handleBtn(self):
 
@@ -228,81 +278,78 @@ class ReportExample(QWidget):
 
         if source.text() == "Testing":
             # TODO: make the calls to run the appropriate query and get the model
-            print("hi")
-            with keybd.Listener(
-                    on_press=self.on_press,
-                    on_release=self.on_release) as self.listener:
-                self.listener.join()
-            print("hello")
+
+            print(self.hasHM)
         if source.text() == "Show Route":
-            print(self.route)
+            print(self.hasPick)
+            time.sleep(1)
+            #aself.check_poke(False)
 
 
     def onActivated(self, text):
         self.genreLbl.setText(text)
         self.genreLbl.adjustSize()
 
-    # def keyPressEvent(self, event):
-    #     print(str(event.key()))
-    #     print()
 
-    def on_press(self, key):
-        print(key)
-        if self.prev_key is not key:
-            self.prev_key = key
-            self.start = time.time()
-
-
-
-    def convert(self, direction):
-        up = win32con.VK_UP
-        down = win32con.VK_DOWN
-        left = win32con.VK_LEFT
-        right = win32con.VK_RIGHT
-        if direction == "down":
-            return down, up
-        if direction == "up":
-            return up, down
-        if direction == "left":
-            return left, right
-        if direction == "right":
-            return right, left
-        return "you're mom gay", "no u"
-
-    def on_release(self, key):
-        self.prev_key
-        self.start
-        #self.mirrored_route
-        self.route
-        finish = time.time()
-        direction, opposite= self.convert(str(key)[4:])
-        if direction != "you're mom gay":
-            time_taken = finish - self.start
-            self.route.append((direction, time_taken))
-            #mirrored_route = [(opposite, time_taken)] + self.mirrored_route  #this will be the mirror of the route we just took
-        if key == keybd.Key.esc:
-            # Stop listener
-            return False
-
-    # Collect events until released
-
-
-
-    # def eventFilter(self, source, event):  #this will be used for recording key presses
-    #     if event.type() == QtCore.QEvent.KeyPress and self.record is 1:
-    #         if event.key() != self.prev_key:   #this is because this thing likes to say I pressed something multiple times when holding down a key
-    #             #print(str(self.prev_key))
-    #             self.prev_key = event.key()
-    #             #print(str(event.key()))
-    #             self.start = time.time()
-    #             #print(self.start)
-    #     if event.type() == QtCore.QEvent.KeyRelease and self.record is 1:
-    #         if self.start is not 0:
-    #             if not event.isAutoRepeat():  #this is for the same reason as above, but doesn't help arrow keys
-    #                 print(str(event.key())[-2:]+" was held for "+str(time.time()-self.start)+" seconds")
-    #                 self.prev_key = None
+    # def keypress(self, key):
+    #     time.sleep(.2)
+    #     self.keyboard.press(key)
+    #     time.sleep(.1)
+    #     self.keyboard.release(key)
+    #     time.sleep(.2)
     #
-    #     return super(ReportExample, self).eventFilter(source, event)
+    # def check_poke(self, hasHM):
+    #     self.keypress('a')
+    #     self.keypress(Key.down)
+    #     self.keypress(Key.down)
+    #     if hasHM:
+    #         self.keypress(Key.down)
+    #     self.keypress('a')
+    #     self.keypress(Key.down)
+    #     self.keyboard.press('a')
+    #     time.sleep(.3)
+    #     self.keyboard.release('a')
+    #     time.sleep(.3)
+    #     self.keyboard.press('a')
+    #     time.sleep(.3)
+    #     self.keyboard.release('a')
+    #
+    # def move_to(self, fron, to): #supposed to be to and from but python said no
+    #     if fron is to:
+    #         return
+    #     elif fron % 2 == to % 2:
+    #         steps = int((to-fron)/2)
+    #         for i in range(steps):
+    #             time.sleep(.1)
+    #             self.keypress(Key.down)
+    #     else:
+    #         self.keypress(Key.right)
+    #         steps = int((to - (fron+1)) / 2)
+    #         for i in range(steps):
+    #             time.sleep(.1)
+    #             self.keypress(Key.down)
+
+    # def pickup(self):
+    #     #check each slot that was selected
+    #
+    #     time.sleep(1)
+    #     self.keypress('z')
+    #     self.keyboard.press('a')
+    #     time.sleep(.3)
+    #     self.keyboard.release('a')
+    #     time.sleep(.7)
+    #     time.sleep(1.5)
+    #     size = self.hasPick.__len__()
+    #     if size is not 0:
+    #         self.hasPick.sort()
+    #         self.move_to(1, self.hasPick[0])
+    #         for i in range(0, size):
+    #             self.check_poke(self.hasHM[str(self.hasPick[i])])
+    #             if i < size - 1:
+    #                 self.move_to(self.hasPick[i], self.hasPick[i + 1])
+    #     self.keypress('z')
+    #     time.sleep(4)
+
 
 
 

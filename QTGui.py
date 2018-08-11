@@ -2,17 +2,14 @@ import sys
 import win32api, win32gui, win32con
 import time
 import pyscreenshot as ImageGrab
+from PyQt5.uic.properties import QtCore
 
 from pynput.keyboard import Key, Controller
 from pynput import keyboard as keybd
-from PyQt5.QtWidgets import (QWidget, QPushButton, QVBoxLayout, QApplication, QLabel)
+
+from PyQt5.QtWidgets import (QWidget, QPushButton, QVBoxLayout, QApplication, QLabel, QCheckBox)
 from PyQt5.QtWidgets import QTableView, QComboBox
-
-##Things to add:
-## -Select Which Slots have pickup bots
-## -Select which mons have HM moves
-## -Let people know that the bot can be inconsistent because windows sucks
-
+from PyQt5 import *
 
 class ReportExample(QWidget):
 
@@ -84,7 +81,45 @@ class ReportExample(QWidget):
         self.mirrored_route = []
         self.prev_key = None
         self.listener = None
+        self.hasPick = []
+        self.hasHM = {}
+        for i in range(1,7):
+            self.hasHM[str(i)] = False
 
+    def initPickCheckbox(self, name, x, y):
+        self.b = QCheckBox(str(name), self)
+        self.b.stateChanged.connect(self.clickBox)
+        self.b.move(x, y)
+        self.b.resize(320, 40)
+
+    def initHMCheckbox(self, name, x, y):
+        self.c = QCheckBox(str(name), self)
+        self.c.stateChanged.connect(self.HMclickBox)
+        self.c.move(x, y)
+        self.c.resize(320, 40)
+
+    def clickBox(self, state):
+        source = self.sender()
+        if state == QtCore.Qt.Checked:
+            for i in range(1, 7):
+                if source.text() == str(i):
+                    self.hasPick.append(i)
+        else:
+            for i in range(1,7):
+                if source.text() == str(i):
+                    self.hasPick.remove(i)
+
+    def HMclickBox(self, state):
+        source = self.sender()
+        if state == QtCore.Qt.Checked:
+            for i in range(1, 7):
+                if source.text()[5] == str(i):
+                    #have i as the key, have it set to true here
+                    self.hasHM[str(i)] = True
+        else:
+            for i in range(1, 7):
+                if source.text()[5] == str(i):
+                    self.hasHM[str(i)] = False
 
     def battled(self):
         self.PP = self.PP - 1
@@ -96,11 +131,12 @@ class ReportExample(QWidget):
         self.keyboard.release(key)
         time.sleep(.2)
 
-    def check_poke(self):
+    def check_poke(self, hasHM):
         self.keypress('a')
         self.keypress(Key.down)
         self.keypress(Key.down)
-        self.keypress(Key.down)
+        if hasHM:
+            self.keypress(Key.down)
         self.keypress('a')
         self.keypress(Key.down)
         self.keyboard.press('a')
@@ -111,22 +147,39 @@ class ReportExample(QWidget):
         time.sleep(.3)
         self.keyboard.release('a')
 
+    def move_to(self, fron, to): #supposed to be to and from but python said no
+        if fron is to:
+            return
+        elif fron % 2 == to % 2:
+            steps = int((to-fron)/2)
+            for i in range(steps):
+                time.sleep(.1)
+                self.keypress(Key.down)
+        else:
+            self.keypress(Key.right)
+            steps = int((to - (fron+1)) / 2)
+            for i in range(steps):
+                time.sleep(.1)
+                self.keypress(Key.down)
+
     def pickup(self):
+        #check each slot that was selected
+
         time.sleep(1)
         self.keypress('z')
         self.keyboard.press('a')
         time.sleep(.3)
         self.keyboard.release('a')
         time.sleep(.7)
-        self.keypress(Key.down)
-        self.check_poke()
-        self.keypress(Key.down)
-        self.check_poke()
-        self.keypress(Key.right)
-        self.check_poke()
-        self.keypress(Key.up)
-        self.check_poke()
-        time.sleep(.5)
+        time.sleep(1.5)
+        size = self.hasPick.__len__()
+        if size is not 0:
+            self.hasPick.sort()
+            self.move_to(1, self.hasPick[0])
+            for i in range(0, size):
+                self.check_poke(self.hasHM[str(self.hasPick[i])])
+                if i < size - 1:
+                    self.move_to(self.hasPick[i], self.hasPick[i + 1])
         self.keypress('z')
         time.sleep(4)
 
@@ -174,38 +227,17 @@ class ReportExample(QWidget):
 
 
     def initUI(self):
-        #create buttons and their event handler
-        pickBtn = QPushButton('Run Pickup', self)
-        pickBtn.setCheckable(True)
-        pickBtn.move(10, 10)
-        pickBtn.clicked[bool].connect(self.handleBtn)
-
-        routingBtn = QPushButton('Run Route', self)
-        routingBtn.setCheckable(True)
-        routingBtn.move(10, 60)
-        routingBtn.clicked[bool].connect(self.handleBtn)
-
-        RecordBtn = QPushButton('Record Route', self)
-        RecordBtn.setCheckable(True)
-        RecordBtn.move(10, 110)
-        RecordBtn.clicked[bool].connect(self.handleBtn)
-
-        routeBtn = QPushButton('Show Route', self)
-        routeBtn.setCheckable(True)
-        routeBtn.move(10, 160)
-        routeBtn.clicked[bool].connect(self.handleBtn)
-
-        clearBtn = QPushButton('Clear Route', self)
-        clearBtn.setCheckable(True)
-        clearBtn.move(10, 210)
-        clearBtn.clicked[bool].connect(self.handleBtn)
-
-        healBtn = QPushButton('Poke Center', self)
-        healBtn.setCheckable(True)
-        healBtn.move(10, 260)
-        healBtn.clicked[bool].connect(self.handleBtn)
-
-
+        #create a button method thing
+        self.createBtn("Run Pickup", 10, 10)
+        self.createBtn('Record Route', 10, 60)
+        self.createBtn('Run Route', 10, 110)
+        self.createBtn('Show Route', 10, 160)
+        self.createBtn('Clear Route', 10, 210)
+        self.createBtn('Poke Center', 10, 260)
+        for i in range(1,7):
+            self.initPickCheckbox(i, 150, 25*i-25)
+        for i in range(1,7):
+            self.initHMCheckbox("slot "+str(i)+" has HM", 200, 25*i-25)
         self.setGeometry(300, 300, 650, 400)
         self.setWindowTitle('Poke Bot')
         self.show()
@@ -213,6 +245,12 @@ class ReportExample(QWidget):
     # def mousePressEvent(self, QMouseEvent):
     #
     #     print(QMouseEvent.pos())
+
+    def createBtn(self, name, x, y):
+        self.pokeBtn = QPushButton(name, self)
+        self.pokeBtn.setCheckable(True)
+        self.pokeBtn.move(x, y)
+        self.pokeBtn.clicked[bool].connect(self.handleBtn)
 
     def run_route(self):
         time.sleep(2)
@@ -261,9 +299,8 @@ class ReportExample(QWidget):
         self.walk(self.left, .85, 0)
 
     def handleBtn(self):
-
         source = self.sender()
-
+        self.hasPick.sort()
         if source.text() == "Run Pickup":
             # TODO: make the calls to run the appropriate query and get the model
             print("starting to pick up")
