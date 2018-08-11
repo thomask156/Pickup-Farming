@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (QWidget, QPushButton, QVBoxLayout, QApplication, QL
 from PyQt5.QtWidgets import QTableView, QComboBox
 
 ##Things to add:
-## -Select Which Slots have pickups bots
+## -Select Which Slots have pickup bots
 ## -Select which mons have HM moves
 ## -Let people know that the bot can be inconsistent because windows sucks
 
@@ -62,7 +62,7 @@ class ReportExample(QWidget):
         direction, opposite= self.convert(str(key)[4:])
         if direction != "you're mom gay":
             time_taken = finish - self.start
-            self.route.append((direction,  .97 * time_taken))
+            self.route.append((direction,  .8 * time_taken))
             #mirrored_route = [(opposite, time_taken)] + self.mirrored_route  #this will be the mirror of the route we just took
         if key == keybd.Key.esc:
             # Stop listener
@@ -84,6 +84,7 @@ class ReportExample(QWidget):
         self.mirrored_route = []
         self.prev_key = None
         self.listener = None
+
 
     def battled(self):
         self.PP = self.PP - 1
@@ -198,6 +199,11 @@ class ReportExample(QWidget):
         clearBtn.move(10, 210)
         clearBtn.clicked[bool].connect(self.handleBtn)
 
+        healBtn = QPushButton('Poke Center', self)
+        healBtn.setCheckable(True)
+        healBtn.move(10, 210)
+        healBtn.clicked[bool].connect(self.handleBtn)
+
 
         self.setGeometry(300, 300, 650, 400)
         self.setWindowTitle('Poke Bot')
@@ -213,6 +219,42 @@ class ReportExample(QWidget):
             time.sleep(.1)
             self.walk(r[0], r[1], 1)
 
+    def pokeCenter(self):
+        self.walk(self.up, 3, 1)
+        time.sleep(.2)
+        self.walk(self.right, 3, 1)
+        time.sleep(.2)
+        self.walk(self.up, 3, 1)
+        time.sleep(.2)
+        self.walk(self.left, 3, 1)
+        time.sleep(.2)
+        self.walk(self.up, 2, 1)
+        time.sleep(.2)
+        self.walk(self.left, .4, 1)
+        time.sleep(.2)
+        self.walk(self.up, 1, 1)
+        time.sleep(.2)
+        self.walk(self.left, .75, 1)
+        time.sleep(.2)
+        self.walk(self.up, 4, 1)
+        self.keypress('a')
+        time.sleep(1)
+        self.keypress('a')
+        time.sleep(1)
+        self.keypress('a')
+        time.sleep(5)
+        self.keypress('a')
+        time.sleep(.5)
+        self.keypress('a')
+        time.sleep(.5)
+        self.keypress('a')
+        time.sleep(.1)
+        self.walk(self.down, 2, 1, )
+        time.sleep(.1)
+        self.walk(self.right, .6, 1)
+        time.sleep(.1)
+        self.walk(self.down, 4, 1)
+        self.walk(self.left, .85, 1)
 
     def handleBtn(self):
 
@@ -232,8 +274,10 @@ class ReportExample(QWidget):
                 self.listener.join()
         if source.text() == "Show Route":
             print(self.route)
-        elif source.text() == "Clear Route":
+        if source.text() == "Clear Route":
             self.route = []
+        elif source.text() == "Poke Center":
+            self.pokeCenter()
 
     def onActivated(self, text):
         self.genreLbl.setText(text)
