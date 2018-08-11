@@ -13,15 +13,14 @@ from PyQt5 import *
 
 class ReportExample(QWidget):
 
+    # this grabs a single pixel on the lower screen of the 3ds emulator, and returns the color of this pixel
     def get_pixel_color(self):
         im = ImageGrab.grab(bbox=(750, 646, 751, 647))
         rgb_im = im.convert('RGB')
         r, g, b = rgb_im.getpixel((0, 0))
         return r, g, b
 
-    # need to use somehting other than get pixel color as it is currently
-    # thinking of using pyscreenshot on a small area of the screen (1x1 lol) and then checking that value
-
+    # this determines if the grabbed pixel is all black, AKA a battle has started
     def screen_change(self):
         color = self.get_pixel_color()[:]
         for pixel in color:
@@ -30,14 +29,17 @@ class ReportExample(QWidget):
         else:
             return True
 
+    # this is a listener function, listening for when a key is pressed and recording when it it pressed
     def on_press(self, key):
         print(key)
         if self.prev_key is not key:
             self.prev_key = key
             self.start = time.time()
 
+    # this method converts keys into readable commands for the walking function, win32con and pynput use different codes
+
     def convert(self, direction):
-        up = win32con.VK_UP
+        up = win32con.VK_UP         # directions used by win32con for input into the 3ds emulator
         down = win32con.VK_DOWN
         left = win32con.VK_LEFT
         right = win32con.VK_RIGHT
@@ -49,28 +51,29 @@ class ReportExample(QWidget):
             return left, right
         if direction == "right":
             return right, left
-        return "you're mom gay", "no u"
+        return "not a direction", "no u"  # here we only want to record arrow key inputs
 
+    # for this method, we take the time from earlier and subtract that from the current time to get the delay
+    # we add on the direction pressed and the delay to our route
     def on_release(self, key):
         self.prev_key
         self.start
         self.route
         finish = time.time()
-        direction, opposite= self.convert(str(key)[4:])
-        if direction != "you're mom gay":
+        direction, opposite = self.convert(str(key)[4:])
+        if direction != "not a direction":
             time_taken = finish - self.start
             self.route.append((direction,  .8 * time_taken))
-            #mirrored_route = [(opposite, time_taken)] + self.mirrored_route  #this will be the mirror of the route we just took
         if key == keybd.Key.esc:
             # Stop listener
             return False
 
-
+    # lotta bad boys here, prev key is used to see if the same key is being held down, and to make sure the delays work correctly
     def __init__(self):
         super().__init__()
         self.initUI()
         self.state_left = win32api.GetKeyState(0x01)
-        self.check_black = (1058, 670)  #this is a pixel on the lower screen we are going to check if it turns black
+        self.check_black = (1058, 670)  # this is a pixel on the lower screen we are going to check if it turns black
         self.up = win32con.VK_UP
         self.down = win32con.VK_DOWN
         self.left = win32con.VK_LEFT
@@ -78,7 +81,6 @@ class ReportExample(QWidget):
         self.keyboard = Controller()
         self.PP = 5
         self.route = []
-        self.mirrored_route = []
         self.prev_key = None
         self.listener = None
         self.hasPick = []
@@ -86,18 +88,21 @@ class ReportExample(QWidget):
         for i in range(1,7):
             self.hasHM[str(i)] = False
 
+    # initializer for the left checkbox
     def initPickCheckbox(self, name, x, y):
         self.b = QCheckBox(str(name), self)
         self.b.stateChanged.connect(self.clickBox)
         self.b.move(x, y)
         self.b.resize(320, 40)
 
+    # initializer for the HM checkboxes
     def initHMCheckbox(self, name, x, y):
         self.c = QCheckBox(str(name), self)
         self.c.stateChanged.connect(self.HMclickBox)
         self.c.move(x, y)
         self.c.resize(320, 40)
 
+    # this says which slots are occupied by pickup pokemon, and therefore which slots we have to go to
     def clickBox(self, state):
         source = self.sender()
         if state == QtCore.Qt.Checked:
@@ -109,21 +114,25 @@ class ReportExample(QWidget):
                 if source.text() == str(i):
                     self.hasPick.remove(i)
 
+    # much like above, this function serves to say if we need to do an extra step because this pokemon has an HM
+    # this uses a dictionary to store the boolean about if the pokemon has an HM move
     def HMclickBox(self, state):
         source = self.sender()
         if state == QtCore.Qt.Checked:
             for i in range(1, 7):
                 if source.text()[5] == str(i):
-                    #have i as the key, have it set to true here
                     self.hasHM[str(i)] = True
         else:
             for i in range(1, 7):
                 if source.text()[5] == str(i):
                     self.hasHM[str(i)] = False
 
+    # small method which is the only place to edit PP
     def battled(self):
         self.PP = self.PP - 1
 
+    # main method used to input key presses, the reason we don't use win32con here is because pynput can't do key holds
+    # only presses
     def keypress(self, key):
         time.sleep(.2)
         self.keyboard.press(key)
@@ -131,6 +140,7 @@ class ReportExample(QWidget):
         self.keyboard.release(key)
         time.sleep(.2)
 
+    # this is just the automation of taking the picked up item from the pokemon
     def check_poke(self, hasHM):
         self.keypress('a')
         self.keypress(Key.down)
@@ -147,7 +157,8 @@ class ReportExample(QWidget):
         time.sleep(.3)
         self.keyboard.release('a')
 
-    def move_to(self, fron, to): #supposed to be to and from but python said no
+    # This moves between slots occupied by pokemon with pickup, I wanted it to be to and from but from is a keyword
+    def move_to(self, fron, to):
         if fron is to:
             return
         elif fron % 2 == to % 2:
@@ -162,9 +173,9 @@ class ReportExample(QWidget):
                 time.sleep(.1)
                 self.keypress(Key.down)
 
+    # this automates the process of going between the pokemon, and running check_poke on each one
+    # it gets a bit clunky when checking wether the poke has an HM or not, as I didn't want to use tuples to store position and HM
     def pickup(self):
-        #check each slot that was selected
-
         time.sleep(1)
         self.keypress('z')
         self.keyboard.press('a')
@@ -183,6 +194,7 @@ class ReportExample(QWidget):
         self.keypress('z')
         time.sleep(4)
 
+    # very basic battle script, uses the first move from the first pokemon, expecting a one shot KO
     def battle_attack(self):
         print("battle")
         time.sleep(7)
@@ -198,6 +210,7 @@ class ReportExample(QWidget):
         time.sleep(.3)
         self.pickup()
 
+    #this function is called when we don't have enough PP to fight and just want to go to the poke center
     def battle_flee(self):
         time.sleep(6)
         self.keypress(Key.down)
@@ -222,12 +235,8 @@ class ReportExample(QWidget):
             win32api.keybd_event(direction, 0, 0, 0)
         win32api.keybd_event(direction, 0, win32con.KEYEVENTF_KEYUP, 0)
 
-
-
-
-
+    # buttons and checklist are initialized here
     def initUI(self):
-        #create a button method thing
         self.createBtn("Run Pickup", 10, 10)
         self.createBtn('Record Route', 10, 60)
         self.createBtn('Run Route', 10, 110)
@@ -242,16 +251,14 @@ class ReportExample(QWidget):
         self.setWindowTitle('Poke Bot')
         self.show()
 
-    # def mousePressEvent(self, QMouseEvent):
-    #
-    #     print(QMouseEvent.pos())
-
+    # simple method to create each button, coordinates and name of button passed
     def createBtn(self, name, x, y):
         self.pokeBtn = QPushButton(name, self)
         self.pokeBtn.setCheckable(True)
         self.pokeBtn.move(x, y)
         self.pokeBtn.clicked[bool].connect(self.handleBtn)
 
+    # this iterates through the route indefinitely, healing when the PP gets too low
     def run_route(self):
         time.sleep(2)
         while self.PP > 0:
@@ -260,7 +267,8 @@ class ReportExample(QWidget):
                     self.pokeCenter()
                 time.sleep(.1)
                 self.walk(r[0], r[1], 1)
-
+    # manual insertion of the route to the pokecenter, unfortunately with how pyqt interacts with the emulator, the
+    # times aren't always accurate, which can lead to frustration
     def pokeCenter(self):
         self.walk(self.up, 3, 0)
         time.sleep(.2)
@@ -297,7 +305,9 @@ class ReportExample(QWidget):
         time.sleep(.1)
         self.walk(self.down, 4, 0)
         self.walk(self.left, .85, 0)
+        self.PP = 5
 
+    # method used to handle button inputs, listener is started in here, every button is self-explanatory
     def handleBtn(self):
         source = self.sender()
         self.hasPick.sort()
@@ -320,6 +330,7 @@ class ReportExample(QWidget):
         elif source.text() == "Poke Center":
             self.pokeCenter()
 
+    # useless at the moment
     def onActivated(self, text):
         self.genreLbl.setText(text)
         self.genreLbl.adjustSize()
