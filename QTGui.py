@@ -40,7 +40,7 @@ class ReportExample(QWidget):
 
     def convert(self, direction):
         up = win32con.VK_UP         # directions used by win32con for input into the 3ds emulator
-        down = win32con.VK_DOWN
+        down = win32con.VK_DOWN     # I also give the opposite direction in case the route can be mirrored
         left = win32con.VK_LEFT
         right = win32con.VK_RIGHT
         if direction == "down":
@@ -56,9 +56,6 @@ class ReportExample(QWidget):
     # for this method, we take the time from earlier and subtract that from the current time to get the delay
     # we add on the direction pressed and the delay to our route
     def on_release(self, key):
-        self.prev_key
-        self.start
-        self.route
         finish = time.time()
         direction, opposite = self.convert(str(key)[4:])
         if direction != "not a direction":
@@ -79,7 +76,7 @@ class ReportExample(QWidget):
         self.left = win32con.VK_LEFT
         self.right = win32con.VK_RIGHT
         self.keyboard = Controller()
-        self.PP = 5
+        self.PP = 25
         self.route = []
         self.prev_key = None
         self.listener = None
@@ -176,6 +173,7 @@ class ReportExample(QWidget):
     # this automates the process of going between the pokemon, and running check_poke on each one
     # it gets a bit clunky when checking wether the poke has an HM or not, as I didn't want to use tuples to store position and HM
     def pickup(self):
+        print("pickup")
         time.sleep(1)
         self.keypress('z')
         self.keyboard.press('a')
@@ -224,6 +222,7 @@ class ReportExample(QWidget):
     def walk(self, direction, dur,
              battle):  # here we set the direction we want to walk in, the time we walk here, and if we battle or not
         win32api.keybd_event(direction, 0, 0, 0)
+        start = time.time()
         stop = time.time() + dur
         while time.time() < stop:
             time.sleep(.01)
@@ -231,7 +230,11 @@ class ReportExample(QWidget):
                 time.sleep(.3)
                 win32api.keybd_event(direction, 0, win32con.KEYEVENTF_KEYUP, 0)
                 time.sleep(.2)
-                self.battle_attack() if battle else self.battle_flee()
+                if battle:
+                    self.battle_attack()
+                else:
+                    self.battle_flee()
+                    self.walk(direction, stop-start, False)
             win32api.keybd_event(direction, 0, 0, 0)
         win32api.keybd_event(direction, 0, win32con.KEYEVENTF_KEYUP, 0)
 
@@ -244,9 +247,11 @@ class ReportExample(QWidget):
         self.createBtn('Clear Route', 10, 210)
         self.createBtn('Poke Center', 10, 260)
         for i in range(1,7):
-            self.initPickCheckbox(i, 150, 25*i-25)
+            self.initPickCheckbox(i, 150, 25*i)
         for i in range(1,7):
-            self.initHMCheckbox("slot "+str(i)+" has HM", 200, 25*i-25)
+            self.initHMCheckbox("slot "+str(i)+" has HM", 200, 25*i)
+        self.pickupLabel = QLabel("Select Which Pokemon Have Pickup As Well As If They Have HM Moves", self)
+        self.pickupLabel.move(150, 10)
         self.setGeometry(300, 300, 650, 400)
         self.setWindowTitle('Poke Bot')
         self.show()
@@ -267,6 +272,7 @@ class ReportExample(QWidget):
                     self.pokeCenter()
                 time.sleep(.1)
                 self.walk(r[0], r[1], 1)
+
     # manual insertion of the route to the pokecenter, unfortunately with how pyqt interacts with the emulator, the
     # times aren't always accurate, which can lead to frustration
     def pokeCenter(self):
@@ -284,7 +290,7 @@ class ReportExample(QWidget):
         time.sleep(.2)
         self.walk(self.up, 1, 0)
         time.sleep(.2)
-        self.walk(self.left, .75, 0)
+        self.walk(self.left, .68, 0)
         time.sleep(.2)
         self.walk(self.up, 4, 0)
         self.keypress('a')
@@ -304,7 +310,7 @@ class ReportExample(QWidget):
         self.walk(self.right, .6, 0)
         time.sleep(.1)
         self.walk(self.down, 4, 0)
-        self.walk(self.left, .85, 0)
+        self.walk(self.left, .65, 0)
         self.PP = 5
 
     # method used to handle button inputs, listener is started in here, every button is self-explanatory
