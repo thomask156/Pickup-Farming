@@ -34,7 +34,11 @@ Always press escape to end the recording of the current route. Minute keypresses
 
 The bot cannot record anything but direction keys and if you press the escape button. **If you get into battle while recording, use your mouse to fight or run.**
 
+# Software Used For This Project
 
+[JetBrains Pycharm](https://www.jetbrains.com/pycharm/): Very useful and efficient IDE, helping me immensely in finding errors and writing code.
+
+[Python (Ver 3.6)](https://www.python.org/): Language of choice for this project, allowing fast and comprehensive coding.
 
 ## Libraries Used for this Project
 
