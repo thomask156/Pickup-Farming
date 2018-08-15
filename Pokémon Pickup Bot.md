@@ -18,8 +18,9 @@ For now, all you need is the QTGui.py file, as that contains everything pertinen
    1. Start recording from the end of the route. This way the bot will never come up short while returning to heal.
    2. Leave about a half second delay between key presses. This process is single threaded, and therefore it can take some time for the bot to record the current route. 
    3. **You press esc once you are able to talk to Nurse Joy**. The bot can handle the talking to her, as well as walking back to the original spot to maintain consistency. 
-8. **Slot Checkboxes**: These checkboxes allow you to choose which slots you currently have a pickup Pokémon in.
-9. **HM Checkboxes**: These checkboxes allow you to tell the bot whether a pickup Pokémon has an HM move or not.
+8. **Clear Poke Route**: This button runs will clear the current route to the poke center. This is useful if the bot is off by an inch or a mile from the poke center, and allows the user to re-record the route without restarting the bot.
+9. **Slot Checkboxes**: These checkboxes allow you to choose which slots you currently have a pickup Pokémon in.
+10. **HM Checkboxes**: These checkboxes allow you to tell the bot whether a pickup Pokémon has an HM move or not.
 
 To exit the bot, you can just press the escape button.
 
@@ -56,7 +57,7 @@ This project is in development, and is developing towards a 1.0 release. Right n
 Future Requirements include the following, sorted by priority:
 
 1. A button to exit the bot's current route and allow the user full control
-2. A button to clear the current poke_route 
+2. A button to clear the current poke_route  (*added*)
 3. QSS styling, giving the GUI a better look 
 4. The ability to check if the bot is stuck and needs to be moved
 5. Input from users as to what they'd like to see added
