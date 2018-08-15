@@ -31,7 +31,6 @@ class ReportExample(QWidget):
 
     # this is a listener function, listening for when a key is pressed and recording when it it pressed
     def on_press(self, key):
-        print(key)
         if self.prev_key is not key:
             self.prev_key = key
             self.start = time.time()
@@ -58,11 +57,16 @@ class ReportExample(QWidget):
     def on_release(self, key):
         finish = time.time()
         direction, opposite = self.convert(str(key)[4:])
+        time_taken = finish - self.start
         if direction != "not a direction":
-            time_taken = finish - self.start
-            self.route.append((direction,  .8 * time_taken))
+            if not self.poke_routeCheck:
+                self.route.append((direction,  .8 * time_taken))
+            else:
+                self.poke_route.append((direction, .78 * time_taken))
+                self.mirror_poke_route.insert(0, (opposite, .85 * time_taken))
         if key == keybd.Key.esc:
-            # Stop listener
+            # Stop listeners
+            self.poke_routeCheck = False
             return False
 
     # lotta bad boys here, prev key is used to see if the same key is being held down, and to make sure the delays work correctly
@@ -76,8 +80,11 @@ class ReportExample(QWidget):
         self.left = win32con.VK_LEFT
         self.right = win32con.VK_RIGHT
         self.keyboard = Controller()
-        self.PP = 25
+        self.PP = 30
         self.route = []
+        self.poke_route = []
+        self.mirror_poke_route = []
+        self.poke_routeCheck = False
         self.prev_key = None
         self.listener = None
         self.hasPick = []
@@ -147,11 +154,11 @@ class ReportExample(QWidget):
         self.keypress('a')
         self.keypress(Key.down)
         self.keyboard.press('a')
-        time.sleep(.3)
+        time.sleep(.2)
         self.keyboard.release('a')
-        time.sleep(.3)
+        time.sleep(.2)
         self.keyboard.press('a')
-        time.sleep(.3)
+        time.sleep(.2)
         self.keyboard.release('a')
 
     # This moves between slots occupied by pokemon with pickup, I wanted it to be to and from but from is a keyword
@@ -173,14 +180,12 @@ class ReportExample(QWidget):
     # this automates the process of going between the pokemon, and running check_poke on each one
     # it gets a bit clunky when checking wether the poke has an HM or not, as I didn't want to use tuples to store position and HM
     def pickup(self):
-        print("pickup")
         time.sleep(1)
         self.keypress('z')
         self.keyboard.press('a')
         time.sleep(.3)
         self.keyboard.release('a')
-        time.sleep(.7)
-        time.sleep(1.5)
+        time.sleep(1)
         size = self.hasPick.__len__()
         if size is not 0:
             self.hasPick.sort()
@@ -246,6 +251,7 @@ class ReportExample(QWidget):
         self.createBtn('Show Route', 10, 160)
         self.createBtn('Clear Route', 10, 210)
         self.createBtn('Poke Center', 10, 260)
+        self.createBtn('Poke Route', 10, 310)
         for i in range(1,7):
             self.initPickCheckbox(i, 150, 25*i)
         for i in range(1,7):
@@ -276,23 +282,25 @@ class ReportExample(QWidget):
     # manual insertion of the route to the pokecenter, unfortunately with how pyqt interacts with the emulator, the
     # times aren't always accurate, which can lead to frustration
     def pokeCenter(self):
-        self.walk(self.up, 3, 0)
-        time.sleep(.2)
-        self.walk(self.right, 4, 0)
-        time.sleep(.2)
-        self.walk(self.up, 3, 0)
-        time.sleep(.2)
-        self.walk(self.left, 3, 0)
-        time.sleep(.2)
-        self.walk(self.up, 2, 0)
-        time.sleep(.2)
-        self.walk(self.left, .4, 0)
-        time.sleep(.2)
-        self.walk(self.up, 1, 0)
-        time.sleep(.2)
-        self.walk(self.left, .68, 0)
-        time.sleep(.2)
-        self.walk(self.up, 4, 0)
+        # self.walk(self.up, 3, 0)
+        # time.sleep(.2)
+        # self.walk(self.right, 4, 0)
+        # time.sleep(.2)
+        # self.walk(self.up, 3, 0)
+        # time.sleep(.2)
+        # self.walk(self.left, 3, 0)
+        # time.sleep(.2)
+        # self.walk(self.up, 2, 0)
+        # time.sleep(.2)
+        # self.walk(self.left, .4, 0)
+        # time.sleep(.2)
+        # self.walk(self.up, 1, 0)
+        # time.sleep(.2)
+        # self.walk(self.left, .68, 0)
+        # time.sleep(.2)
+        # self.walk(self.up, 4, 0)
+        for step in self.poke_route:
+            self.walk(step[0], step[1], 0)
         self.keypress('a')
         time.sleep(1)
         self.keypress('a')
@@ -303,15 +311,18 @@ class ReportExample(QWidget):
         time.sleep(.5)
         self.keypress('a')
         time.sleep(.5)
-        self.keypress('a')
+        self.keypress('a')  # your pokemon have been fully healed!
         time.sleep(.1)
-        self.walk(self.down, 2, 0)
-        time.sleep(.1)
-        self.walk(self.right, .6, 0)
-        time.sleep(.1)
-        self.walk(self.down, 4, 0)
-        self.walk(self.left, .65, 0)
-        self.PP = 5
+        # self.walk(self.down, 2, 0)
+        # time.sleep(.1)
+        # self.walk(self.right, .6, 0)
+        # time.sleep(.1)
+        # self.walk(self.down, 4, 0)
+        # self.walk(self.left, .7, 0)
+        for step in self.mirror_poke_route:
+            time.sleep(.2)
+            self.walk(step[0], step[1], 0) # should return us to our original position
+        self.PP = 30
 
     # method used to handle button inputs, listener is started in here, every button is self-explanatory
     def handleBtn(self):
@@ -333,8 +344,16 @@ class ReportExample(QWidget):
             print(self.route)
         if source.text() == "Clear Route":
             self.route = []
-        elif source.text() == "Poke Center":
+        if source.text() == "Poke Center":
+            time.sleep(2)
             self.pokeCenter()
+        elif source.text() == "Poke Route":
+            self.poke_routeCheck = True
+            with keybd.Listener(
+                    on_press=self.on_press,
+                    on_release=self.on_release) as self.listener:
+                self.listener.join()
+
 
     # useless at the moment
     def onActivated(self, text):
