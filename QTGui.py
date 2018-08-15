@@ -252,6 +252,7 @@ class ReportExample(QWidget):
         self.createBtn('Clear Route', 10, 210)
         self.createBtn('Poke Center', 10, 260)
         self.createBtn('Poke Route', 10, 310)
+        self.createBtn('Clear Poke Route', 150, 310)
         for i in range(1,7):
             self.initPickCheckbox(i, 150, 25*i)
         for i in range(1,7):
@@ -347,12 +348,15 @@ class ReportExample(QWidget):
         if source.text() == "Poke Center":
             time.sleep(2)
             self.pokeCenter()
-        elif source.text() == "Poke Route":
+        if source.text() == "Poke Route":
             self.poke_routeCheck = True
             with keybd.Listener(
                     on_press=self.on_press,
                     on_release=self.on_release) as self.listener:
                 self.listener.join()
+        elif source.text() == "Clear Poke Route":
+            self.poke_route = []
+            self.mirror_poke_route = []
 
 
     # useless at the moment
