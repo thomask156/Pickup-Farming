@@ -2,6 +2,8 @@
 
 This is a bot I am developing to automate the process of farming items obtained via pickup in Pokémon games via Citra, a 3ds emulator. Pickup is an ability where after a battle a Pokémon has a chance of picking up an item, and this bot serves to battle, check for items and recharge moves constantly, allowing the bot to run ad infinitum. Users will be able to customize the routing to the poke center, the patch of wild grass which has Pokémon, and even choose which slots contain the pickup Pokémon. 
 
+This was coded in [Python (Ver 3.6)](https://www.python.org/).
+
 
 
 ## Getting Started
@@ -34,11 +36,7 @@ Always press escape to end the recording of the current route. Minute keypresses
 
 The bot cannot record anything but direction keys and if you press the escape button. **If you get into battle while recording, use your mouse to fight or run.**
 
-# Software Used For This Project
 
-[JetBrains Pycharm](https://www.jetbrains.com/pycharm/): Very useful and efficient IDE, helping me immensely in finding errors and writing code.
-
-[Python (Ver 3.6)](https://www.python.org/): Language of choice for this project, allowing fast and comprehensive coding.
 
 ## Libraries Used for this Project
 
