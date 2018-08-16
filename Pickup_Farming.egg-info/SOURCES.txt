@@ -1,0 +1,6 @@
+README.md
+Pickup_Farming.egg-info/PKG-INFO
+Pickup_Farming.egg-info/SOURCES.txt
+Pickup_Farming.egg-info/dependency_links.txt
+Pickup_Farming.egg-info/requires.txt
+Pickup_Farming.egg-info/top_level.txt

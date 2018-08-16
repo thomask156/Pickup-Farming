@@ -1,0 +1,4 @@
+pynput
+pyscreenshot
+pywin32
+PyQt5
