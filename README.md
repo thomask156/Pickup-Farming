@@ -8,7 +8,9 @@ This was coded in [Python (Ver 3.6)](https://www.python.org/).
 
 ## Getting Started
 
-For now, all you need is the QTGui.py file, as that contains everything pertinent to running the bot. I will describe each button as well as how to most effectively use it:
+To run this bot, download every file here into a folder. From there, run the setup.py file and wait for it to finish installing the required libraries. You can then open QTGUI.py and run the bot. Have fun!
+
+ I will now describe each button as well as how to most effectively use it:
 
 1. **Run Pickup**: This button will go into your inventory, and check each selected Pokémon for if they have items, then return to the overworld screen.
 2. **Record Route**: This will start a listener for the arrow keys, allowing you to record your route through the patch of tall grass. When recording, try to leave half a second in between keypresses and don't run at all, as the listener can **only** record arrow keys.  **Press esc to stop recording** the route.
